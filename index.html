@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Form Helper: Fill Forms in One Click</title>
+<style>
+  :root { --bg:#ffffff; --card:#f4f4f5; --text:#15151c; --muted:#5b5b68; --line:#e2e2e8; --accent:#15151c; --accent-text:#ffffff; }
+  body.dark { --bg:#0b0b0f; --card:#16161d; --text:#f2f2f5; --muted:#9a9aa8; --line:#2c2c38; --accent:#f2f2f5; --accent-text:#0b0b0f; }
+  * { box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
+  body { margin:0; font-family:system-ui, -apple-system, sans-serif; background:var(--bg); color:var(--text); overflow-x:hidden; transition:background .4s, color .4s; padding-bottom:90px; }
+
+  .ticker { background:var(--accent); color:var(--accent-text); overflow:hidden; white-space:nowrap; padding:10px 0; font-size:.9rem; font-weight:600; }
+  .ticker-track { display:inline-block; animation:scroll 25s linear infinite; }
+  @keyframes scroll { from { transform:translateX(0); } to { transform:translateX(-50%); } }
+
+  header { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; padding:18px 6vw; position:sticky; top:0; background:var(--bg); border-bottom:1px solid var(--line); z-index:20; }
+  .logo { font-weight:800; font-size:1.2rem; letter-spacing:-0.02em; }
+  nav a { color:var(--muted); text-decoration:none; margin-left:18px; font-weight:600; transition:color .2s; }
+  nav a:hover { color:var(--text); }
+
+  button { font:inherit; font-weight:600; border-radius:10px; padding:12px 18px; cursor:pointer; border:1px solid var(--line); background:transparent; color:var(--text); transition:transform .15s, border-color .2s; }
+  button:hover { transform:translateY(-2px); border-color:var(--text); }
+  button:focus-visible { outline:3px solid var(--muted); outline-offset:2px; }
+  .primary { background:var(--accent); color:var(--accent-text); border:none; }
+
+  .hero { text-align:center; padding:100px 6vw 70px; }
+  .hero h1 { font-size:clamp(2.6rem,8vw,6rem); font-weight:800; letter-spacing:-0.04em; line-height:1; margin:0 0 20px; animation:rise .9s ease-out both; }
+  .hero p { color:var(--muted); font-size:1.15rem; max-width:620px; margin:0 auto 28px; line-height:1.6; animation:rise .9s .15s ease-out both; }
+  @keyframes rise { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:none; } }
+
+  section { padding:80px 6vw; max-width:960px; margin:0 auto; }
+  h2 { font-size:2rem; letter-spacing:-0.02em; margin:0 0 14px; }
+  .lead { color:var(--muted); margin:0 0 26px; line-height:1.6; }
+  .reveal { opacity:0; transform:translateY(30px); transition:opacity .7s ease, transform .7s ease; }
+  .reveal.show { opacity:1; transform:none; }
+
+  .card { background:var(--card); border:1px solid var(--line); border-radius:18px; padding:28px; }
+  .fields { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:4px 18px; }
+  label { display:block; font-weight:600; margin:14px 0 6px; }
+  input, textarea { width:100%; font:inherit; font-size:1rem; padding:12px 14px; border-radius:10px; border:1px solid var(--line); background:var(--bg); color:var(--text); transition:border-color .2s; }
+  input:focus, textarea:focus { outline:none; border-color:var(--text); }
+  .row { display:flex; gap:10px; flex-wrap:wrap; margin-top:18px; align-items:center; }
+  .sub { color:var(--muted); }
+  .toast { margin-top:16px; padding:12px 16px; border-radius:10px; border:1px solid var(--line); display:none; background:var(--card); }
+
+  .demo { border:1px solid var(--line); border-radius:18px; padding:22px; margin-top:24px; }
+  .demo .field { display:flex; justify-content:space-between; gap:16px; padding:10px 0; border-bottom:1px solid var(--line); }
+  .demo .field span:first-child { color:var(--muted); }
+  .demo .field span:last-child { font-weight:600; text-align:right; word-break:break-word; }
+
+  .steps { counter-reset:step; }
+  .step { display:flex; gap:16px; margin-bottom:18px; align-items:flex-start; }
+  .step::before { counter-increment:step; content:counter(step); min-width:38px; height:38px; border-radius:50%; background:var(--accent); color:var(--accent-text); font-weight:800; display:flex; align-items:center; justify-content:center; }
+  .step p { margin:6px 0 0; color:var(--muted); line-height:1.5; }
+
+  details { border:1px solid var(--line); border-radius:12px; padding:16px 18px; margin-bottom:12px; }
+  summary { cursor:pointer; font-weight:600; }
+  details p { color:var(--muted); margin:10px 0 0; line-height:1.6; }
+
+  .policy p { color:var(--muted); line-height:1.7; margin:0 0 14px; }
+  .policy h3 { margin:24px 0 8px; font-size:1.15rem; }
+  .contact-link { display:inline-block; margin:6px 14px 6px 0; font-weight:700; color:var(--text); text-decoration:underline; }
+
+  .tip { color:var(--muted); font-size:.95rem; margin-top:14px; }
+  footer { border-top:1px solid var(--line); padding:50px 6vw 120px; color:var(--muted); }
+  .foot-inner { max-width:960px; margin:0 auto; display:flex; justify-content:space-between; flex-wrap:wrap; gap:20px; }
+  footer a { color:var(--text); text-decoration:none; font-weight:600; margin-right:16px; }
+  footer a:hover { text-decoration:underline; }
+
+  .bottom-bar { position:fixed; left:50%; bottom:20px; transform:translateX(-50%); display:flex; gap:6px; padding:8px; background:var(--card); border:1px solid var(--line); border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,.2); z-index:30; flex-wrap:wrap; justify-content:center; max-width:94vw; }
+  .bottom-bar a { color:var(--text); text-decoration:none; font-weight:600; font-size:.9rem; padding:10px 14px; border-radius:10px; transition:background .2s; }
+  .bottom-bar a:hover, .bottom-bar a.active { background:var(--accent); color:var(--accent-text); }
+  .bottom-bar .cta { background:var(--accent); color:var(--accent-text); }
+</style>
+</head>
+<body>
+
+<div class="ticker" aria-hidden="true">
+  <div class="ticker-track">
+    <span>Save your details once &nbsp;•&nbsp; Fill any form in seconds &nbsp;•&nbsp; Free, private, and built for shared computers &nbsp;•&nbsp; Your data never leaves your device &nbsp;•&nbsp;&nbsp;</span>
+    <span>Save your details once &nbsp;•&nbsp; Fill any form in seconds &nbsp;•&nbsp; Free, private, and built for shared computers &nbsp;•&nbsp; Your data never leaves your device &nbsp;•&nbsp;&nbsp;</span>
+  </div>
+</div>
+
+<header>
+  <div class="logo">Form Helper</div>
+  <nav>
+    <a href="#features">Features</a>
+    <a href="#try">Try it</a>
+    <a href="#about">About</a>
+    <a href="#faq">FAQ</a>
+  </nav>
+  <button id="themeBtn" aria-label="Switch between dark and light theme">Dark / Light</button>
+</header>
+
+<div class="hero">
+  <h1>Fill forms.<br>Not again.</h1>
+  <p>Save your name, email, and phone once. Then fill them into any form in seconds, without typing the same details again and again.</p>
+  <a href="#try"><button class="primary">Try the demo</button></a>
+</div>
+
+<section id="features" class="reveal">
+  <h2>Features</h2>
+  <p class="lead">Simple tools for students and anyone who uses shared computers, such as cyber cafes and libraries.</p>
+  <div class="steps">
+    <div class="step"><div><b>Fast filling</b><p>Fill your details with one click on any form.</p></div></div>
+    <div class="step"><div><b>Stays on your device</b><p>Your details are saved only in this browser, never sent to us.</p></div></div>
+    <div class="step"><div><b>One-click erase</b><p>Clear everything before you leave a shared computer.</p></div></div>
+  </div>
+</section>
+
+<section id="try" class="reveal">
+  <h2>Try it now</h2>
+  <p class="lead">Enter your details, save them, and see them fill the demo form. Everything stays in this browser.</p>
+  <div class="card">
+    <div class="fields">
+      <div><label for="name">Full name</label><input id="name" placeholder="e.g. Sunny Kumar"></div>
+      <div><label for="email">Email</label><input id="email" type="email" placeholder="you@example.com"></div>
+      <div><label for="phone">Mobile number</label><input id="phone" type="tel" placeholder="10-digit mobile number"></div>
+      <div><label for="altPhone">Alternate number</label><input id="altPhone" type="tel" placeholder="Optional"></div>
+      <div><label for="dob">Date of birth</label><input id="dob" type="date"></div>
+      <div><label for="pincode">PIN code</label><input id="pincode" inputmode="numeric" placeholder="e.g. 248001"></div>
+      <div style="grid-column:1 / -1;"><label for="address">Address</label><textarea id="address" rows="3" placeholder="House no., street, city, state"></textarea></div>
+    </div>
+    <div class="row">
+      <button class="primary" id="saveBtn">Save details</button>
+      <button id="fillBtn">Fill demo form</button>
+      <button id="eraseBtn">Erase all</button>
+    </div>
+    <div id="toast" class="toast">Saved on this device.</div>
+  </div>
+
+  <div class="demo">
+    <p class="sub" style="margin-top:0;">Demo form preview:</p>
+    <div class="field"><span>Name</span><span id="outName">—</span></div>
+    <div class="field"><span>Email</span><span id="outEmail">—</span></div>
+    <div class="field"><span>Mobile</span><span id="outPhone">—</span></div>
+    <div class="field"><span>Alternate number</span><span id="outAlt">—</span></div>
+    <div class="field"><span>Date of birth</span><span id="outDob">—</span></div>
+    <div class="field"><span>PIN code</span><span id="outPin">—</span></div>
+    <div class="field"><span>Address</span><span id="outAddress">—</span></div>
+  </div>
+  <p class="tip">Safety tip: Never save bank, card, password, or Aadhaar numbers in any form tool.</p>
+</section>
+
+<section id="about" class="reveal">
+  <h2>About us</h2>
+  <p class="lead">Form Helper is a small project built by one developer, Ankush. It is made to save time and keep your everyday details in your own hands.</p>
+  <details><summary>Who made this?</summary><p>Form Helper is built and maintained by a single developer, Ankush. There is no company or investor behind it.</p></details>
+  <details><summary>Why does it exist?</summary><p>Students and people using shared computers often type the same details again and again. This tool makes that faster and keeps the data on the device.</p></details>
+  <details><summary>Do you have access to my data?</summary><p>No. We never receive, store, or see the details you save. They stay in your browser only.</p></details>
+</section>
+
+<section id="faq" class="reveal">
+  <h2>Frequently asked questions</h2>
+  <details><summary>Where is my data stored?</summary><p>Only in your browser's local storage, on the device you use.</p></details>
+  <details><summary>Can it save Aadhaar or bank details?</summary><p>No. It is designed for everyday contact and address details only.</p></details>
+  <details><summary>How do I remove my data on a shared computer?</summary><p>Press Erase all before you leave.</p></details>
+  <details><summary>Does it cost money?</summary><p>No. It is free to use.</p></details>
+</section>
+
+<section id="privacy" class="reveal policy">
+  <h2>Privacy policy</h2>
+  <p class="lead">Last updated: November 2026</p>
+  <h3>We do not collect your data</h3>
+  <p>We never take, collect, store, or sell your data. The details you type into Form Helper are saved only in your own browser, using local storage on your device.</p>
+  <h3>No servers, no accounts</h3>
+  <p>Form Helper does not have a server that receives your information, and there are no accounts or sign-ups.</p>
+  <h3>Your control</h3>
+  <p>You can erase all saved details at any time with the Erase all button. Clearing your browser data also removes them.</p>
+  <h3>Shared computers</h3>
+  <p>If you use a shared computer, please press Erase all before you leave.</p>
+  <h3>Changes</h3>
+  <p>If this policy ever changes, the updated version will be posted on this page.</p>
+</section>
+
+<section id="contact" class="reveal">
+  <h2>Contact us</h2>
+  <p class="lead">Have a question or suggestion? Reach out on LinkedIn or see the code on GitHub.</p>
+  <a class="contact-link" href="https://www.linkedin.com/in/ankush-28b0a4360" target="_blank" rel="noopener">LinkedIn</a>
+  <a class="contact-link" href="https://github.com/trustmm5" target="_blank" rel="noopener">GitHub</a>
+</section>
+
+<footer>
+  <div class="foot-inner">
+    <div>
+      <p style="margin:0 0 10px;">Made by Ankush</p>
+      <a href="#privacy">Privacy policy</a>
+      <a href="https://www.linkedin.com/in/ankush-28b0a4360" target="_blank" rel="noopener">LinkedIn</a>
+      <a href="https://github.com/trustmm5" target="_blank" rel="noopener">GitHub</a>
+    </div>
+    <p style="margin:0;">© 2026 Form Helper</p>
+  </div>
+</footer>
+
+<nav class="bottom-bar" aria-label="Quick navigation">
+  <a href="#features">Features</a>
+  <a href="#try" class="cta">Try it</a>
+  <a href="#about">About</a>
+  <a href="#faq">FAQ</a>
+  <a href="#privacy">Privacy</a>
+  <a href="#contact">Contact</a>
+</nav>
+
+<script>
+  const $ = id => document.getElementById(id);
+
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('show'); });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+  function setDark(on) {
+    document.body.classList.toggle('dark', on);
+    localStorage.setItem('theme', on ? 'dark' : 'light');
+  }
+  setDark(localStorage.getItem('theme') === 'dark');
+  $('themeBtn').onclick = () => setDark(!document.body.classList.contains('dark'));
+
+  const links = document.querySelectorAll('.bottom-bar a');
+  const sections = [...document.querySelectorAll('section[id]')];
+  window.addEventListener('scroll', () => {
+    let current = '';
+    sections.forEach(s => { if (window.scrollY >= s.offsetTop - 200) current = s.id; });
+    links.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + current));
+  });
+
+  const FIELDS = ['name', 'email', 'phone', 'altPhone', 'dob', 'pincode', 'address'];
+  const OUT = { name:'outName', email:'outEmail', phone:'outPhone', altPhone:'outAlt', dob:'outDob', pincode:'outPin', address:'outAddress' };
+
+  function showToast(msg) {
+    const t = $('toast');
+    t.textContent = msg;
+    t.style.display = 'block';
+    clearTimeout(showToast.timer);
+    showToast.timer = setTimeout(() => { t.style.display = 'none'; }, 2500);
+  }
+
+  FIELDS.forEach(id => { $(id).value = localStorage.getItem('fh_' + id) || ''; });
+
+  $('saveBtn').onclick = () => {
+    FIELDS.forEach(id => localStorage.setItem('fh_' + id, $(id).value.trim()));
+    showToast('Saved on this device.');
+  };
+
+  $('fillBtn').onclick = () => {
+    FIELDS.forEach(id => { $(OUT[id]).textContent = localStorage.getItem('fh_' + id) || '—'; });
+    showToast('Demo form filled.');
+  };
+
+  $('eraseBtn').onclick = () => {
+    FIELDS.forEach(id => { localStorage.removeItem('fh_' + id); $(id).value = ''; $(OUT[id]).textContent = '—'; });
+    showToast('All saved details erased.');
+  };
+</script>
+</body>
+</html>
